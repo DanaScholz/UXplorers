@@ -35,7 +35,7 @@ generate_codebook(raw.short, Rohdaten, "Daten/codebook.csv")
 codebook <- read_codebook("Daten/codebook_final.csv")
 names(raw.short) <- codebook$variable
 
-# Richtige Datentypen zuordnen
+# Richtige Datentypen zuordnen ----
 
 raw.short$age <- as.numeric(raw.short$age)
 
@@ -52,60 +52,51 @@ raw.short$education %>%
                      `4`="(Fach-)Abitur",
                      `5`="(Fach-)Hochschulabschluss")) -> raw.short$education
 
+# Umformung der 'region'-Variable
+raw.short$region %>%
+  dplyr::recode_factor(`1` = "Land", 
+                       `2` = "Stadtrand", 
+                       `3` = "Stadt",
+                       `4` = "Nicht in der Städteregion Aachen") %>%
+  as.factor() -> raw.short$region
+
+raw.short$own_vehicle %>%
+  dplyr::recode_factor(`1` = "Ja", `2` = "Nein") %>%
+  as.factor() -> raw.short$own_vehicle
 raw.short$license %>%
   dplyr::recode_factor(`1` = "Ja", `2` = "Nein") %>%
   as.factor() -> raw.short$license
 
+# Ranking-Umformung und Datentyp zuordnen ----
+# Umkehrung der Ränge für jedes Verkehrsmittel vor der Mittelwertberechnung
+for(i in 1:9) {
+  raw.short[[paste0("preferences_mobility_", i)]] <- 9 - raw.short[[paste0("preferences_mobility_", i)]] + 1
+}
 
-# Umformung der einzelnen 'preferences_mobility' Variablen in geordnete Faktoren (RANKING!)
-raw.short$preferences_mobility_1 <- factor(raw.short$preferences_mobility_1, levels = c(1:9), ordered = TRUE)
-raw.short$preferences_mobility_2 <- factor(raw.short$preferences_mobility_2, levels = c(1:9), ordered = TRUE)
-raw.short$preferences_mobility_3 <- factor(raw.short$preferences_mobility_3, levels = c(1:9), ordered = TRUE)
-raw.short$preferences_mobility_4 <- factor(raw.short$preferences_mobility_4, levels = c(1:9), ordered = TRUE)
-raw.short$preferences_mobility_5 <- factor(raw.short$preferences_mobility_5, levels = c(1:9), ordered = TRUE)
-raw.short$preferences_mobility_6 <- factor(raw.short$preferences_mobility_6, levels = c(1:9), ordered = TRUE)
-raw.short$preferences_mobility_7 <- factor(raw.short$preferences_mobility_7, levels = c(1:9), ordered = TRUE)
-raw.short$preferences_mobility_8 <- factor(raw.short$preferences_mobility_8, levels = c(1:9), ordered = TRUE)
-raw.short$preferences_mobility_9 <- factor(raw.short$preferences_mobility_9, levels = c(1:9), ordered = TRUE)
+# Umwandeln der umgekehrten Ränge in Faktoren
+for(i in 1:9) {
+  raw.short[[paste0("preferences_mobility_", i)]] <- factor(raw.short[[paste0("preferences_mobility_", i)]], levels = c(1:9))
+}
 
-# Berechnung der mittleren Ränge für jedes Verkehrsmittel
-mean_rankings <- sapply(raw.short[, grep("preferences_mobility_", names(raw.short))], function(x) mean(as.numeric(x), na.rm = TRUE))
+# Berechnung der mittleren umgekehrten Ränge für jedes Verkehrsmittel
+mean_rankings_inverted <- sapply(raw.short[, grep("preferences_mobility_", names(raw.short))], function(x) mean(as.numeric(x), na.rm = TRUE))
 
-# Zuordnen der Namen der Verkehrsmittel zu den berechneten mittleren Rängen
-names(mean_rankings) <- c("Auto", "E-Auto", "Roller/Mofa/Motorrad", "Fahrrad", "E-Fahrrad", "E-Roller", "Bus", "Bahn", "Taxi")
+# Zuordnen der Namen der Verkehrsmittel zu den berechneten umgekehrten mittleren Rängen
+names(mean_rankings_inverted) <- c("Auto", "E-Auto", "Roller/Mofa/Motorrad", "Fahrrad", "E-Fahrrad", "E-Roller", "Bus", "Bahn", "Taxi")
 
-# Anzeigen der mittleren Ränge in aufsteigender Reihenfolge
-mean_rankings_sorted <- sort(mean_rankings)
-mean_rankings_sorted
-
-# Dataframe aus mittleren Rängen für ggplot2 erstellen
-mean_rankings_df <- data.frame(
-  Verkehrsmittel = names(mean_rankings_sorted),
-  Mittlerer_Rang = mean_rankings_sorted
-)
-
-# Jetzt verwenden wir ggplot2, um die Bar-Chart zu erstellen
-mean_rankings_df %>%
-  ggplot(aes(x = reorder(Verkehrsmittel, Mittlerer_Rang), y = Mittlerer_Rang)) +
-  geom_bar(stat = "identity", fill = "#112446") +
-  labs(x = "Verkehrsmittel", 
-       y = "Mittlerer Rang", 
-       title = "Mittlerer Rang der Verkehrsmittel-Nutzung", 
-       subtitle = "Basierend auf Präferenzen der Befragten", 
-       caption = "Datenquelle: Befragung") +
-  theme_minimal() +
-  coord_flip() # Diese Zeile dreht die Achsen, um die Balken horizontal anzuzeigen
+# Anzeigen der mittleren umgekehrten Ränge in absteigender Reihenfolge (höhere Präferenz zuerst)
+mean_rankings_inverted_sorted <- sort(mean_rankings_inverted, decreasing = TRUE)
 
 
 ###habe hier mal aufgehört, wir können ja schauen, welche wir brauchen
 
-# Umcodierung der negativ formulierten Items mit 6 Antwortmöglichkeiten
+# Umcodierung der negativ formulierten Items mit 6 Antwortmöglichkeiten ----
 raw.short$driving_climate_2_n <- 7 - raw.short$driving_climate_2_n
 raw.short$driving_climate_4_n <- 7 - raw.short$driving_climate_4_n
 raw.short$technology_scared_n <- 7 - raw.short$technology_scared_n
 raw.short$technology_overload_n <- 7 - raw.short$technology_overload_n
 
-#Qualitätskontrolle
+#Qualitätskontrolle ----
 nrow(raw.short)
 raw.short <- careless_indices(raw.short,
                               speeder_analysis = "median/3",
@@ -126,7 +117,7 @@ raw.short %>%
   filter(careless_mahadflag == FALSE) -> raw.short
 
 
-# Skalen berechnen
+# Skalen berechnen ----
 
 names(raw.short)
 
@@ -154,7 +145,7 @@ schluesselliste <- list(
 
 scores <- scoreItems(schluesselliste, items = raw.short, missing = TRUE, min = 1, max = 6)
 data <- bind_cols(raw.short, as_tibble(scores$scores))
-
+#CronbachsAlpha und RDS abspeichern----
 scores$alpha
 warnings()
 saveRDS(data, "Daten/dataFromNumeric.rds")

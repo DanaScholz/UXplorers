@@ -30,6 +30,9 @@ raw <- filter(raw, Progress >= 99)
 # Spalten entfernen
 raw.short <- raw[,c(-1:-4, -7:-8,-10:-17)]
 
+#Nicht in Aachen arbeitend/ wohnend entfernen
+raw.short <- raw.short[!(raw.short$livesinaachen %in% c("2")), ]
+
 # Codebook generieren
 generate_codebook(raw.short, Rohdaten, "Daten/codebook.csv")
 codebook <- read_codebook("Daten/codebook_final.csv")
@@ -63,9 +66,47 @@ raw.short$region %>%
 raw.short$own_vehicle %>%
   dplyr::recode_factor(`1` = "Ja", `2` = "Nein") %>%
   as.factor() -> raw.short$own_vehicle
-raw.short$license %>%
-  dplyr::recode_factor(`1` = "Ja", `2` = "Nein") %>%
-  as.factor() -> raw.short$license
+
+
+# Medienkanäle definieren
+medienkanäle <- c("1" = "Gedruckte Zeitungen/Zeitschriften",
+                  "2" = "Artikel auf Websites von Zeitungen oder Zeitschriften",
+                  "3" = "Plakate in der Stadt",
+                  "4" = "Radio",
+                  "5" = "Fernsehnachrichten",
+                  "6" = "E-Mail Newsletter",
+                  "7" = "Artikel auf Websites von Radio- oder Fernsehsendern",
+                  "8" = "Artikel auf Websites anderer Anbieter",
+                  "9" = "Artikel/Beiträge auf Facebook",
+                  "10" = "Artikel/Beiträge auf Instagram",
+                  "11" = "Artikel/Beiträge auf anderen sozialen Medien")
+
+
+# Angepasste Funktion zur Übersetzung der Zahlenkombinationen in Medienkanal-Namen #Problem mit alter Funktion - Ziffern 10 und 11
+translate_media_channels <- function(channels) {
+  # Zuerst zweistellige Zahlen 10 und 11 suchen
+  channel_numbers <- gsub("10", "X", channels) # Ersetze 10 mit einem Platzhalter 'X'
+  channel_numbers <- gsub("11", "Y", channel_numbers) # Ersetze 11 mit einem Platzhalter 'Y'
+  
+  # Dann die restlichen Zahlen aufteilen
+  channel_numbers <- unlist(strsplit(channel_numbers, ""))
+  
+  # Ersetze die Platzhalter zurück zu 10 und 11
+  channel_numbers <- gsub("X", "10", channel_numbers)
+  channel_numbers <- gsub("Y", "11", channel_numbers)
+  
+  # Übersetze die Zahlen in Medienkanal-Namen
+  channel_names <- medienkanäle[channel_numbers]
+  paste(channel_names, collapse = ", ")
+}
+
+# Anwenden der angepassten Funktion auf die 'media channels' Spalte in raw.short
+raw.short$translated_media_channels <- sapply(raw.short$`media channels`, translate_media_channels)
+
+# Überprüfen der neuen Spalte
+head(raw.short$translated_media_channels)
+
+
 
 # Ranking-Umformung und Datentyp zuordnen ----
 # Umkehrung der Ränge für jedes Verkehrsmittel vor der Mittelwertberechnung
@@ -101,8 +142,6 @@ nrow(raw.short)
 raw.short <- careless_indices(raw.short,
                               speeder_analysis = "median/3",
                               likert_vector = c(22:62))
-
-raw.short <- raw.short[!(raw.short$livesinaachen %in% c("2")), ]
 
 
 raw.short %>%
@@ -145,6 +184,7 @@ schluesselliste <- list(
 
 scores <- scoreItems(schluesselliste, items = raw.short, missing = TRUE, min = 1, max = 6)
 data <- bind_cols(raw.short, as_tibble(scores$scores))
+
 #CronbachsAlpha und RDS abspeichern----
 scores$alpha
 warnings()

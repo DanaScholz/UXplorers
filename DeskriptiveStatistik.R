@@ -27,7 +27,7 @@ names(media_frequency_df) <- c("MediaChannel", "Frequency")
 
 # Balkendiagramm erstellen
 ggplot(media_frequency_df, aes(x = reorder(MediaChannel, -Frequency), y = Frequency)) +
-  geom_bar(stat = "identity") +
+  geom_bar(stat = "identity", fill = "#112446") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
   labs(title = "Häufigkeit der Nutzung von Medienkanälen",
        x = "Medienkanal",

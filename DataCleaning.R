@@ -6,6 +6,7 @@
 #install.packages("careless")
 #install.packages("jmv")
 #install.packages("rstatix")
+install.packages("writexl")
 
 library(hcictools)
 library(tidyverse)
@@ -18,10 +19,11 @@ library(dplyr)
 library(rstatix)
 library(car)
 library(ez)
+library(writexl)
 
 # Daten einlesen
 
-Rohdaten <- "Daten/Rohdaten_07.01.csv"
+Rohdaten <- "Daten/Rohdaten_09.01.csv"
 raw <- load_qualtrics_csv(Rohdaten)
 
 # Zeilen entfernen
@@ -136,6 +138,8 @@ raw.short$driving_climate_2_n <- 7 - raw.short$driving_climate_2_n
 raw.short$driving_climate_4_n <- 7 - raw.short$driving_climate_4_n
 raw.short$technology_scared_n <- 7 - raw.short$technology_scared_n
 raw.short$technology_overload_n <- 7 - raw.short$technology_overload_n
+raw.short$technology_complex_n <- 7 - raw.short$technology_complex_n
+raw.short$technology_destroy_n <- 7 - raw.short$technology_destroy_n
 
 #Qualitätskontrolle ----
 nrow(raw.short)
@@ -147,12 +151,14 @@ raw.short <- careless_indices(raw.short,
 raw.short %>%
   filter(speeder_flag == FALSE) -> raw.noSpeeder #notwendig, da sonst die Funktion careless nicht funktioniert
 
+# Speeder-Flag
+raw.noSpeeder <- raw.short %>% filter(speeder_flag == FALSE)
 
 raw.short %>%
   filter(speeder_flag == FALSE) %>%
   filter(careless_longstr < 20) %>%
   filter(careless_psychsyn > 0) %>%
-  filter(careless_psychant < 0) %>%
+  #filter(careless_psychant < 0) %>%
   filter(careless_mahadflag == FALSE) -> raw.short
 
 
@@ -162,7 +168,7 @@ names(raw.short)
 
 schluesselliste <- list(
   Driving_Climate = c("driving_climate_1", "driving_climate_2_n", "driving_climate_3", "driving_climate_4_n"),
-  Techchnology_Commitment = c( "technology_curios", "technology_favor","technology_new","technology_moreoften","technology_scared_n","technology_overload_n","technology_destroy","technology_complex","technology_succesful","technology_me","technology_solution","technology_happening"),
+  Techchnology_Commitment = c( "technology_curios", "technology_favor","technology_new","technology_moreoften","technology_scared_n","technology_overload_n","technology_destroy_n","technology_complex_n","technology_succesful","technology_me","technology_solution","technology_happening"),
   Performance_Expectancy = c("utaut_performance1", "utaut_performance2", "utaut_performance3", "utaut_performance 4"),
   Effort_Expectancy = c("utaut_effort1", "utaut_effort2", "utaut_effort3", "utaut_effort4"),
   Social_Influence = c("utaut_social1", "utaut_social2", "utaut_social3"),
@@ -187,6 +193,9 @@ data <- bind_cols(raw.short, as_tibble(scores$scores))
 
 #CronbachsAlpha und RDS abspeichern----
 scores$alpha
-warnings()
+
+
 saveRDS(data, "Daten/dataFromNumeric.rds")
 
+write_xlsx(raw.short, "raw_short.xlsx")
+write.csv(raw.short, "raw_short_jamovi.csv", row.names = FALSE, quote = FALSE)

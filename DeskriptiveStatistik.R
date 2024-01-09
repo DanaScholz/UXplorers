@@ -44,13 +44,29 @@ mean_rankings_inverted_df <- data.frame(
 # Erstellung des Balkendiagramms mit ggplot2
 library(ggplot2)
 
+# Erstellung des Balkendiagramms mit ggplot2 
 mean_rankings_inverted_df %>%
-  ggplot(aes(x = reorder(Verkehrsmittel, -Mittlerer_umgekehrter_Rang), y = Mittlerer_umgekehrter_Rang)) +
+  ggplot(aes(x = reorder(Verkehrsmittel, Mittlerer_umgekehrter_Rang), y = Mittlerer_umgekehrter_Rang)) +
   geom_bar(stat = "identity", fill = "#112446") +
   labs(x = "Verkehrsmittel", 
-       y = "Mittlerer umgekehrter Rang", 
-       title = "Mittlerer umgekehrter Rang der Verkehrsmittel-Nutzung", 
-       subtitle = "Basierend auf Präferenzen der Befragten", 
+       y = "Präferenzscore", 
+       title = "Präferenz für Verkehrsmittel", 
+       subtitle = "Höherer Score zeigt stärkere Präferenz", 
        caption = "Datenquelle: Befragung") +
   theme_minimal() +
   coord_flip()  # Balken horizontal anzeigen
+
+# Erstellung eines Dataframes mit der Anzahl der Beobachtungen für jede Region
+region_counts <- raw.short %>%
+  count(region) %>%
+  arrange(desc(n))
+
+# Erstellung des Balkendiagramms mit ggplot2 mit einheitlicher Farbe
+ggplot(region_counts, aes(x = region, y = n)) +
+  geom_bar(stat = "identity", fill = "#112446") +
+  labs(x = "Siedlungsstruktur innerhalb der Städteregion Aachen", 
+       y = "Anzahl der Befragten", 
+       title = "Verteilung der Befragten nach Siedlungsstruktur", 
+       caption = "Datenquelle: Befragung") +
+  theme_minimal() +
+  coord_flip() # Für horizontale Balken

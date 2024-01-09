@@ -158,7 +158,7 @@ raw.short %>%
   filter(speeder_flag == FALSE) %>%
   filter(careless_longstr < 20) %>%
   filter(careless_psychsyn > 0) %>%
-  #filter(careless_psychant < 0) %>%
+  #filter(careless_psychant < 0) %>% #hier nochmal gucken
   filter(careless_mahadflag == FALSE) -> raw.short
 
 

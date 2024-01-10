@@ -6,7 +6,7 @@
 #install.packages("careless")
 #install.packages("jmv")
 #install.packages("rstatix")
-install.packages("writexl")
+#install.packages("writexl")
 
 library(hcictools)
 library(tidyverse)
@@ -23,7 +23,7 @@ library(writexl)
 
 # Daten einlesen
 
-Rohdaten <- "Daten/Rohdaten_09.01.csv"
+Rohdaten <- "Daten/Rohdaten_10.01.csv"
 raw <- load_qualtrics_csv(Rohdaten)
 
 # Zeilen entfernen
@@ -158,7 +158,7 @@ raw.short %>%
   filter(speeder_flag == FALSE) %>%
   filter(careless_longstr < 20) %>%
   filter(careless_psychsyn > 0) %>%
-  #filter(careless_psychant < 0) %>% #hier nochmal gucken
+  #filter(careless_psychant < 0) %>% #hier nochmal gucken mit Dozenten abklären
   filter(careless_mahadflag == FALSE) -> raw.short
 
 

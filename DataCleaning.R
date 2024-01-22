@@ -23,7 +23,7 @@ library(writexl)
 
 # Daten einlesen
 
-Rohdaten <- "Daten/Rohdaten_10.01.csv"
+Rohdaten <- "Daten/Rohdaten_16.01.csv"
 raw <- load_qualtrics_csv(Rohdaten)
 
 # Zeilen entfernen
@@ -176,16 +176,7 @@ schluesselliste <- list(
   Hedonic_Motivation = c("utaut_hedonic1", "utaut_hedonic2", "utaut_hedonic3"),
   Price_Value = c("utaut_pricevalue1", "utaut_pricevalue2", "utaut_pricevalue3"),
   Behavioral_Intention = c("utaut_behavioral1", "utaut_behavioral2", "utaut_behavioral3"),
-  Use_Intention = c("utaut_useintention"),
-  Semantic_Differential = c(
-                      "Sem_Diff_Ziefle_1", "Sem_Diff_Ziefle_2", "Sem_Diff_Ziefle_3",
-                      "Sem_Diff_Ziefle_4", "Sem_Diff_Ziefle_5", "Sem_Diff_Ziefle_6",
-                      "Sem_Diff_Ziefle_7", "Sem_Diff_Ziefle_8", "Sem_Diff_Ziefle_9",
-                      "Sem_Diff_Ziefle_10", "Sem_Diff_Ziefle_11", "Sem_Diff_Ziefle_12",
-                      "Sem_Diff_Ziefle_13", "Sem_Diff_Ziefle_14", "Sem_Diff_Ziefle_15",
-                      "Sem_Diff_Ziefle_16", "Sem_Diff_Ziefle_17", "Sem_Diff_Ziefle_18",
-                      "Sem_Diff_Ziefle_19", "Sem_Diff_Ziefle_20", "Sem_Diff_Ziefle_21",
-                      "Sem_Diff_Ziefle_22", "Sem_Diff_Ziefle_23"))
+  Use_Intention = c("utaut_useintention"))
 
 
 scores <- scoreItems(schluesselliste, items = raw.short, missing = TRUE, min = 1, max = 6)
@@ -197,5 +188,4 @@ scores$alpha
 
 saveRDS(data, "Daten/dataFromNumeric.rds")
 
-write_xlsx(raw.short, "raw_short.xlsx")
-write.csv(raw.short, "raw_short_jamovi.csv", row.names = FALSE, quote = FALSE)
+

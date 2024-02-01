@@ -23,11 +23,11 @@ library(writexl)
 
 # Daten einlesen
 
-Rohdaten <- "Daten/Rohdaten_16.01.csv"
+Rohdaten <- "Daten/Rohdaten_26.01.csv"
 raw <- load_qualtrics_csv(Rohdaten)
 
 # Zeilen entfernen
-raw <- filter(raw, Progress >= 99)
+raw <- filter(raw, Progress >= 100)
 
 # Spalten entfernen
 raw.short <- raw[,c(-1:-4, -7:-8,-10:-17)]
@@ -140,6 +140,12 @@ raw.short$technology_scared_n <- 7 - raw.short$technology_scared_n
 raw.short$technology_overload_n <- 7 - raw.short$technology_overload_n
 raw.short$technology_complex_n <- 7 - raw.short$technology_complex_n
 raw.short$technology_destroy_n <- 7 - raw.short$technology_destroy_n
+raw.short$utaut_effort1 <- 7 - raw.short$utaut_effort1 
+raw.short$utaut_effort2 <- 7 - raw.short$utaut_effort2
+raw.short$utaut_effort3 <- 7 - raw.short$utaut_effort3
+raw.short$utaut_effort4 <- 7 - raw.short$utaut_effort4
+
+
 
 #Qualitätskontrolle ----
 nrow(raw.short)
@@ -176,7 +182,46 @@ schluesselliste <- list(
   Hedonic_Motivation = c("utaut_hedonic1", "utaut_hedonic2", "utaut_hedonic3"),
   Price_Value = c("utaut_pricevalue1", "utaut_pricevalue2", "utaut_pricevalue3"),
   Behavioral_Intention = c("utaut_behavioral1", "utaut_behavioral2", "utaut_behavioral3"),
-  Use_Intention = c("utaut_useintention"))
+  Use_Intention = c("utaut_useintention"),
+  Sem_Diff = c("Sem_Diff_Ziefle_1", "Sem_Diff_Ziefle_2", "Sem_Diff_Ziefle_3",
+               "Sem_Diff_Ziefle_4", "Sem_Diff_Ziefle_5", "Sem_Diff_Ziefle_6",
+               "Sem_Diff_Ziefle_7", "Sem_Diff_Ziefle_8", "Sem_Diff_Ziefle_9",
+               "Sem_Diff_Ziefle_10", "Sem_Diff_Ziefle_11", "Sem_Diff_Ziefle_12",
+               "Sem_Diff_Ziefle_13", "Sem_Diff_Ziefle_14", "Sem_Diff_Ziefle_15",
+               "Sem_Diff_Ziefle_16", "Sem_Diff_Ziefle_17", "Sem_Diff_Ziefle_18",
+               "Sem_Diff_Ziefle_19", "Sem_Diff_Ziefle_20", "Sem_Diff_Ziefle_21",
+               "Sem_Diff_Ziefle_22", "Sem_Diff_Ziefle_23"),
+Sem_Diff_Sicherheit = c("Sem_Diff_Ziefle_4", "Sem_Diff_Ziefle_5", "Sem_Diff_Ziefle_6", "Sem_Diff_Ziefle_7", "Sem_Diff_Ziefle_8"),
+Sem_Diff_Zuverlässigkeit = c("Sem_Diff_Ziefle_12","Sem_Diff_Ziefle_13","Sem_Diff_Ziefle_22", "Sem_Diff_Ziefle_23"))
+
+adjektivpaare <- c(
+  "nicht verkehrstauglich:verkehrstauglich",
+  "feindlich:freundlich",
+  "unübersichtlich:übersichtlich",
+  "nicht vertrauenswürdig:vertrauenswürdig",
+  "riskant:berechenbar",
+  "unkontrollierbar:kontrollierbar",
+  "angreifbar:beschützt",
+  "beängstigend:beruhigend",
+  "spionierend:abgeschirmt",
+  "datenunsicher:datensicher",
+  "unbequem:bequem",
+  "zeitaufwendig:zeitsparend",
+  "stressig im Straßenverkehr:entspannend im Straßenverkehr",
+  "traditionell:neuartig",
+  "langweilig:faszinierend",
+  "sperrig:elegant",
+  "ungewohnt:gewohnt",
+  "teuer:erschwinglich",
+  "kurzlebig:nachhaltig",
+  "umweltschädlich:umweltfreundlich",
+  "schlecht angebunden:gut angebunden",
+  "ineffizient:effizient",
+  "unflexibel:flexibel"
+)
+
+
+
 
 
 scores <- scoreItems(schluesselliste, items = raw.short, missing = TRUE, min = 1, max = 6)
@@ -188,4 +233,4 @@ scores$alpha
 
 saveRDS(data, "Daten/dataFromNumeric.rds")
 
-
+write.csv(data, "Daten/final_data.csv")

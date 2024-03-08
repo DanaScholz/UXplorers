@@ -16,29 +16,21 @@ library(esquisse)
 library(ggplot2)
 library(reshape2)
 library(tidyr)
-mydata <- readRDS("Daten/dataFromNumeric.rds")
+final_data <- readRDS("Daten/dataFromNumeric.rds")
+print(final_data$Techchnology_Commitment)
 
 
+data_filtered <- final_data %>%
+  filter(gender != "keine Angabe") 
 
-#Mediakanalnutzung Häufigkeit----
-# Zerlegen der 'translated_media_channels' Spalte in einzelne Medienkanal-Namen
-media_channels_list <- strsplit(raw.short$translated_media_channels, ", ")
-media_channels_unlisted <- unlist(media_channels_list)
+ggplot(data_filtered, aes(x = gender, y = data_filtered$Techchnology_Commitment, fill = gender)) + 
+  geom_boxplot() + 
+  labs(title = "Technikbereitschaft nach Geschlecht", 
+       x = "Geschlecht", 
+       y = "Technikbereitschaft") +
+  theme_minimal() + 
+  scale_fill_manual(values = c("männlich" = "blue", "weiblich" = "red"))  # Füge Farben für männlich und weiblich hinzu
 
-# Häufigkeitsauszählung für jeden Medienkanal
-media_frequency <- table(media_channels_unlisted)
-
-# Umwandlung in ein Dataframe für die Visualisierung
-media_frequency_df <- as.data.frame(media_frequency)
-names(media_frequency_df) <- c("MediaChannel", "Frequency")
-
-# Balkendiagramm erstellen
-ggplot(media_frequency_df, aes(x = reorder(MediaChannel, -Frequency), y = Frequency)) +
-  geom_bar(stat = "identity", fill = "#112446") +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
-  labs(title = "Häufigkeit der Nutzung von Medienkanälen",
-       x = "Medienkanal",
-       y = "Häufigkeit")
 
 
 #Verkehrsmittel_Nutzung Präferenzen ----
@@ -199,7 +191,7 @@ age_sd <- sd(mydata$age, na.rm = TRUE)
 # Auszählen der Häufigkeiten für das Geschlecht
 gender_counts <- table(mydata$gender)
 gender_proportions <- prop.table(gender_counts)
-
+gender_counts
 # Auszählen der Häufigkeiten für den Bildungsabschluss
 education_counts <- table(mydata$education)
 education_proportions <- prop.table(education_counts)
@@ -236,6 +228,24 @@ print(summary_table)
 knitr::kable(summary_table, format = "html")
 
 
+library(ggplot2)
+
+# Berechnung der Prozentsätze
+region_counts <- region_counts %>%
+  mutate(Prozent = n / sum(n) * 100)
+
+# Erstellung des Tortendiagramms
+ggplot(region_counts, aes(x = "", y = Prozent, fill = region)) +
+  geom_bar(stat = "identity", width = 1) +
+  coord_polar(theta = "y") +
+  labs(x = NULL, y = NULL, fill = "Siedlungsstruktur", 
+       title = "Verteilung der Befragten nach Siedlungsstruktur", 
+       caption = "n=107") +
+  theme_minimal() +
+  theme(legend.position = "bottom") +
+  geom_text(aes(label = paste0(round(Prozent), "%")), 
+            position = position_stack(vjust = 0.5)) +
+  guides(fill = guide_legend(title = "Siedlungsstruktur"))
 
 
 

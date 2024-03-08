@@ -169,6 +169,37 @@ robust_model <- rlm(Behavioral_Intention ~ Sem_Diff, data = mydata)
 # Zusammenfassung des robusten Modells anzeigen
 summary(robust_model)
 
+robust_model <- rlm(Behavioral_Intention ~ Sem_Diff, data = mydata)
+
+####Visualisierung
+
+
+
+# Daten für die Regressionslinie vorbereiten
+regression_data <- data.frame(
+  Sem_Diff = range(mydata$Sem_Diff),
+  Behavioral_Intention = predict(robust_model, newdata = data.frame(Sem_Diff = range(mydata$Sem_Diff)))
+)
+
+
+
+
+  ggplot(mydata, aes(x = Sem_Diff, y = Behavioral_Intention)) +
+  geom_point(size = 2) +  # Größe der Punkte anpassen
+  geom_line(data = regression_data, aes(x = Sem_Diff, y = Behavioral_Intention), color = "blue") + # Regressionslinie hinzufügen
+  labs(
+    title = "Einfluss der Wahrnehmung des upBUS auf die Nutzungsabsicht", 
+    x = "Wahrnehmung des upBUS", 
+    y = "Nutzungsabsicht (Behavioral Intention to Use)",
+    caption = "Robustes Regressionsmodell"
+  ) +
+  theme_minimal() + # Minimalistisches Thema verwenden
+  coord_cartesian(xlim = c(min(mydata$Sem_Diff), max(mydata$Sem_Diff)), 
+                  ylim = c(min(mydata$Behavioral_Intention), max(mydata$Behavioral_Intention))) +
+  theme(axis.text.x = element_text(size = 10),
+        axis.text.y = element_text(size = 10))
+
+
 #Hypothese 7 -----
 shapiro.test(mydata$Behavioral_Intention)
 
@@ -188,6 +219,28 @@ model <- polr(Use_Intention ~ Behavioral_Intention + Facilitating_Conditions, da
 
 # Anzeigen der Zusammenfassung des Modells
 summary(model)
+
+
+#Visualisierung --> ganz komisch, ist nicht das was wir wollen
+library(effects)
+
+# Erstelle das effect object für Behavioral Intention
+effect_plot_behav <- Effect(c("Behavioral_Intention", "Facilitating_Conditions"), model)
+
+# Plot für Behavioral Intention
+plot(effect_plot_behav, 
+     main = "Effekt von Behavioral Intention auf Use Intention",
+     xlab = "Behavioral Intention", ylab = "Wahrscheinlichkeit", 
+     type = "probability")  # Verwende "probability" oder "logit" für den 'type'-Parameter
+
+# Erstelle das Effekt-Objekt für Behavioral Intention
+effect_plot_behav <- allEffects(model)
+
+# Plots für alle Effekte im Modell
+plot(effect_plot_behav, 
+     main = "Effekte auf Use Intention",
+     xlab = "Prädiktoren", ylab = "Wahrscheinlichkeit", 
+     type = "probability")  # 'type' muss "probability" oder "logit" sein
 
 #Hypothese 9
 # Robuste Regression
